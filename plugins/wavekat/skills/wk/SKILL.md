@@ -34,7 +34,7 @@ command -v wk && wk --version
 
 If it's missing, stop and ask the user to install it. Don't download or
 install it yourself. Point them to the install page:
-https://wavekat.com/docs/cli/ (macOS and Linux, one command). When they say
+https://wavekat.com/docs/cli/getting-started/ (macOS and Linux, one command). When they say
 it's done, run `wk --version` again and carry on. If `wk` was installed to
 `~/.local/bin` and isn't found, ask them to add that folder to `PATH`.
 
