@@ -1,0 +1,14 @@
+{
+  "name": "wavekat-skills",
+  "description": "WaveKat plugins for Claude Code: phone calls and call flows through the wk CLI.",
+  "owner": { "name": "WaveKat", "url": "https://wavekat.com" },
+  "plugins": [
+    {
+      "name": "wavekat",
+      "source": "./plugins/wavekat",
+      "description": "Make real phone calls, play messages and build call flows with the WaveKat CLI (wk).",
+      "category": "productivity",
+      "tags": ["voice", "phone-calls", "cli"]
+    }
+  ]
+}

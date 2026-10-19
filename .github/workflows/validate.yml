@@ -1,0 +1,41 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    # Public repo: GitHub-hosted runners only, never self-hosted.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check JSON manifests
+        run: |
+          jq empty .claude-plugin/marketplace.json
+          for f in plugins/*/.claude-plugin/plugin.json; do jq empty "$f"; done
+
+      - name: Validate with Claude Code
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate . --strict
+          for p in plugins/*/; do claude plugin validate "$p" --strict; done
+
+      - name: Every marketplace entry points at a plugin
+        run: |
+          jq -r '.plugins[].source' .claude-plugin/marketplace.json | while read -r src; do
+            test -f "$src/.claude-plugin/plugin.json" || { echo "missing $src"; exit 1; }
+          done
+
+      - name: No local paths or private emails
+        run: |
+          if git grep -nEI '(/Users/|/home/)[A-Za-z]|[A-Za-z0-9._%+-]+@(gmail|outlook|hotmail)\.com' -- . ':!.github/workflows/validate.yml'; then
+            echo 'local path or personal email found'
+            exit 1
+          fi
