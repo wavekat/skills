@@ -40,6 +40,24 @@ curl -fsSL https://dl.wavekat.com/wk/install.sh | sh
 wk agents
 ```
 
+## Data and privacy
+
+The plugin is instructions only: it has no connectors and no code of its own.
+Claude runs the `wk` CLI on your machine, and `wk` talks to these services:
+
+| Service | What it receives | When |
+|---------|------------------|------|
+| WaveKat platform (`platform.wavekat.com`, hosted on Cloudflare) | Your WaveKat sign-in, call flows you create, and (with Sync to cloud on) call history, recordings and transcripts | `wk login`, `wk flows`, platform data commands, and calls from a signed-in engine |
+| Your own SIP / phone provider | The numbers you call and the call audio | `wk voice call` |
+| ElevenLabs (through WaveKat) | The text of prompts being turned into speech | `wk voice call --say`, `wk flows render` / `publish --render` |
+| Sentry | Anonymous crash and error reports, with personal fields removed | When a `wk` command fails; turn off with `wk config telemetry off` |
+
+What is kept and for how long is set out in the
+[WaveKat privacy policy](https://wavekat.com/privacy/): call data synced to
+a WaveKat account is kept until you delete it. Recordings and transcripts
+from calls stay on your computer unless you sign in with Sync to cloud on.
+Use is covered by the [WaveKat terms](https://wavekat.com/terms/).
+
 ## Icon
 
 `plugins/wavekat/.claude-plugin/icon.png` is generated from
