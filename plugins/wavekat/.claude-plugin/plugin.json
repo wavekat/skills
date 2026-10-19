@@ -4,8 +4,12 @@
   "version": "0.1.0",
   "description": "Make real phone calls, play messages and build call flows with the WaveKat CLI (wk), from Claude.",
   "author": { "name": "WaveKat", "url": "https://wavekat.com" },
-  "homepage": "https://wavekat.com/docs/cli/",
+  "homepage": "https://wavekat.com/",
   "repository": "https://github.com/wavekat/skills",
+  "documentationUrl": "https://wavekat.com/docs/cli/",
+  "supportUrl": "https://github.com/wavekat/skills/issues",
+  "privacyPolicyUrl": "https://wavekat.com/privacy/",
+  "termsOfServiceUrl": "https://wavekat.com/terms/",
   "license": "MIT",
   "keywords": ["wavekat", "wk", "voice", "phone-calls", "sip", "call-flows", "cli"]
 }
