@@ -32,16 +32,33 @@ end to end.
 command -v wk && wk --version
 ```
 
-If it's missing, ask the user before installing, then:
+If it's missing, ask the user before installing. Install the prebuilt
+binary from `dl.wavekat.com` and check its sha256 before using it:
 
 ```sh
-curl -fsSL https://dl.wavekat.com/wk/install.sh | sh                    # wk only
-curl -fsSL https://dl.wavekat.com/wk/install.sh | sh -s -- --with-voice # wk + calling engine
+case "$(uname -s)-$(uname -m)" in
+  Darwin-arm64)               target=aarch64-apple-darwin ;;
+  Darwin-x86_64)              target=x86_64-apple-darwin ;;
+  Linux-x86_64|Linux-amd64)   target=x86_64-unknown-linux-musl ;;
+  Linux-aarch64|Linux-arm64)  target=aarch64-unknown-linux-musl ;;
+  *) echo "wk is not available for this platform" >&2; exit 1 ;;
+esac
+tag=$(curl -fsSL https://dl.wavekat.com/wk/latest)
+work=$(mktemp -d) && cd "$work"
+curl -fsSLO "https://dl.wavekat.com/wk/$tag/wk-$tag-$target.tar.gz"
+curl -fsSLO "https://dl.wavekat.com/wk/$tag/wk-$tag-$target.sha256"
+sha256sum -c "wk-$tag-$target.sha256" 2>/dev/null \
+  || shasum -a 256 -c "wk-$tag-$target.sha256"   # stop if this fails
+tar -xzf "wk-$tag-$target.tar.gz"
+mkdir -p ~/.local/bin && install -m 0755 "$(find . -type f -name wk | head -n1)" ~/.local/bin/wk
+~/.local/bin/wk --version
 ```
 
-It installs to `/usr/local/bin` if writable, else `~/.local/bin` (check
-that's on `PATH`). Supported: macOS (Apple Silicon, Intel) and Linux
-(x86_64, aarch64). `wk update --check` / `wk update` keep it current.
+If `~/.local/bin` isn't on `PATH`, call it by full path or tell the user to
+add it. The user can also follow https://wavekat.com/docs/cli/ themselves.
+Supported: macOS (Apple Silicon, Intel) and Linux (x86_64, aarch64).
+`wk update --check` / `wk update` keep it current. For calls without the
+desktop app, `wk voice install` adds the calling engine (section 3).
 
 ## 2. Sign in (needed for flows and platform data)
 

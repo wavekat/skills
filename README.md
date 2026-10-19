@@ -40,6 +40,15 @@ curl -fsSL https://dl.wavekat.com/wk/install.sh | sh
 wk agents
 ```
 
+## Icon
+
+`plugins/wavekat/.claude-plugin/icon.png` is generated from
+[wavekat-brand](https://github.com/wavekat/wavekat-brand)
+(`assets/logos/wavekat-icon-light.svg`). Don't edit it here: change the
+brand SVG, then run `scripts/sync-icon.sh` or the **Sync brand icon**
+workflow (it also runs daily). `scripts/icon.lock` records which brand
+commit the PNG came from.
+
 ## Links
 
 - CLI docs: <https://wavekat.com/docs/cli/>

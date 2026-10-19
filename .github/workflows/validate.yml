@@ -33,6 +33,22 @@ jobs:
             test -f "$src/.claude-plugin/plugin.json" || { echo "missing $src"; exit 1; }
           done
 
+      - name: Icon meets directory rules (square PNG, 512-2048 px, under 2 MB)
+        run: |
+          for icon in plugins/*/.claude-plugin/icon.png; do
+            python3 - "$icon" <<'PY'
+          import struct, sys, os
+          p = sys.argv[1]
+          with open(p, "rb") as f:
+              head = f.read(24)
+          assert head[:8] == b"\x89PNG\r\n\x1a\n", f"{p}: not a PNG"
+          w, h = struct.unpack(">II", head[16:24])
+          assert w == h and 512 <= w <= 2048, f"{p}: {w}x{h}, need square 512-2048"
+          assert os.path.getsize(p) < 2 * 1024 * 1024, f"{p}: over 2 MB"
+          print(f"{p}: {w}x{h} ok")
+          PY
+          done
+
       - name: No local paths or private emails
         run: |
           if git grep -nEI '(/Users/|/home/)[A-Za-z]|[A-Za-z0-9._%+-]+@(gmail|outlook|hotmail)\.com' -- . ':!.github/workflows/validate.yml'; then

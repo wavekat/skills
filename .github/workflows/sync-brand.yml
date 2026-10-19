@@ -1,0 +1,44 @@
+name: Sync brand icon
+
+# Keeps plugins/wavekat/.claude-plugin/icon.png in step with wavekat-brand.
+# Runs daily, on demand, or when wavekat-brand sends a `brand-updated`
+# repository_dispatch event.
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [brand-updated]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-brand
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install rsvg-convert
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq librsvg2-bin
+
+      - name: Sync icon from wavekat-brand
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/sync-icon.sh
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add plugins/wavekat/.claude-plugin/icon.png scripts/icon.lock
+          git commit -m "chore: sync icon from wavekat-brand"
+          git push
