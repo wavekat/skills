@@ -126,16 +126,26 @@ called must have asked to hear from the user. One published flow, **Ask a
 question**, serves every question. Its variables all have defaults, so it
 also plays with none given.
 
-**First use.** Look for the flow; create it only if it is missing:
+**First use.** The flow file is `references/ask-question.yaml` in this
+skill's directory (resolve it from the base directory this skill was loaded
+from, not the working directory). Run the first call with `--check --json`
+to confirm the engine supports `--var`; if it errors on that flag, tell the
+user to run `wk voice update` (do not read exit code 2 there as "busy").
+Look for the flow; create it only if it is missing:
 
 ```sh
-wk flows list --json        # a published "Ask a question"? An unpublished draft of that name: reuse it (render, publish)
-# Missing: tell the user and ask before creating it. Then, using the file
-# references/ask-question.yaml next to this SKILL.md:
-wk flows create references/ask-question.yaml --json   # .id is flow_…
-wk flows render <flow-id>   # voices the defaults, so a call that keeps them is free
-wk flows publish <flow-id>
+wk flows list --json        # a published "Ask a question"? An unpublished draft of that name: reuse it (publish --render)
+# Missing: tell the user and ask before creating it. Say it needs the Pro
+# plan (it has a menu) and uses one of their published-flow slots. Then:
+wk flows create <this skill's directory>/references/ask-question.yaml --json   # .id is flow_…
+wk flows publish <flow-id> --render --json   # voices the defaults, so a call that keeps them is free
 ```
+
+If the account can't publish (`plan_blocked`, or `canPublish: false` in
+`wk flows list --json`) or the user declines, use the same flow without
+publishing: replace `--flow "Ask a question"` with
+`--flow-file <this skill's directory>/references/ask-question.yaml` and keep
+the same `--var` options. Nothing is created or published.
 
 **Each question** is one call (confirm with the user first, as in the Ground rules):
 
@@ -169,7 +179,8 @@ Ground rules.
   per hour at most).
 - The question goes to text-to-speech and is read on a phone line. Never put
   secrets, tokens or private data in it.
-- Act on the option pressed and carry on.
+- Act on the option pressed and carry on. Tell the user in the terminal what
+  was asked and what they chose by phone, so they can see it when they return.
 - No answer: do not guess and do not call again for the same question. Write
   the question in the terminal and wait, or carry on only with work that
   doesn't depend on the answer.
@@ -192,8 +203,9 @@ wk flows voices --json                      # voices for --voice
 ```
 
 - Leave `id` out of a new file; `create` assigns it.
-- Calls play recorded clips only. Text prompts must be voiced (`render`, or
-  `publish --render`) or those steps stay silent.
+- Calls play recorded clips only, except text in a flow with variables,
+  which is voiced when the call is placed. Other text prompts must be
+  voiced (`render`, or `publish --render`) or those steps stay silent.
 - Saving drops YAML comments. Put notes in a `note:` field.
 - After `render`, pull the draft with `show --yaml` before editing locally.
 - Plans cap how many flows can be published (1 on Free) and which steps

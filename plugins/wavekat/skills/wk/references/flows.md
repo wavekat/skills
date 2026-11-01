@@ -52,8 +52,9 @@ prompt: { audio: ./intro.wav, transcript: "Thanks for calling." }   # own WAV, u
 prompt: { audio: vprompt_abc123, transcript: "Thanks for calling." } # an already uploaded clip
 ```
 
-Calls only play recordings. Run `wk flows render <id>` (or
-`wk flows publish <id> --render`) to voice text prompts.
+Calls only play recordings, except text in a flow with variables, which is
+voiced when the call is placed. Run `wk flows render <id>` (or
+`wk flows publish <id> --render`) to voice other text prompts.
 
 ## Variables (`schema_version: 4`)
 
@@ -64,26 +65,27 @@ may also have `description` and `max_len` (default 200, at most 500,
 counted in characters). `{{#name}}...{{/name}}` keeps its text only when
 the value is not empty (no nesting, no else).
 
-Placeholders are allowed only in text prompts, in the `template` of an audio
-prompt, and in menu option labels. `template` is allowed only on audio
-prompts, and only in v4.
+`template` is allowed only on audio prompts, and only in v4.
 
 ```yaml
-# text prompt
+# fragment: top-level variables, and a text prompt inside a node
 schema_version: 4
 variables:
   place: { description: Where to meet, default: "the front desk", max_len: 80 }
-prompt: "Please meet us at {{place}}."
+nodes:
+  hello:
+    kind: greeting
+    prompt: "Please meet us at {{place}}."
 ```
 
 ```yaml
-# audio prompt voiced ahead with the defaults, template kept for overrides
+# fragment: an audio prompt voiced ahead with the defaults, template kept for overrides
 prompt: { audio: vprompt_abc123, template: "Please meet us at {{place}}." }
 ```
 
 `render` voices prompts with the defaults, so a call that keeps them costs
 nothing. Pass values with `wk voice call --flow <id-or-name> --var place="Room 4"`
-(or `--vars-file`); they are voiced when the call is placed. Values are
+(or `--vars-file`; `--var` also works with `--flow-file`); they are voiced when the call is placed. Values are
 trimmed and never expanded. In v1 to v3 flows `{{` is ordinary text. For a
 ready-made question flow, see `ask-question.yaml` and the section
 "Ask someone a question by phone" in SKILL.md.
