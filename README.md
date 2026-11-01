@@ -20,7 +20,7 @@ Or inside a Claude Code session:
 
 Then ask Claude something like *"call +1 415 555 0123 and tell them their
 order is ready"* or *"build a call flow that asks people to press 1 to
-confirm"*. If `wk` isn't installed yet, Claude offers to install it.
+confirm"*, or *"call me on +1 415 555 0123 if you get stuck"*. If `wk` isn't installed yet, Claude offers to install it.
 
 ## What's here
 

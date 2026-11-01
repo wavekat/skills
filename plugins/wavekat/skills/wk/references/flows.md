@@ -8,7 +8,7 @@ before saving or calling; it is the authority, not this page.
 ## Shape
 
 ```yaml
-schema_version: 1
+schema_version: 1   # 4 if the flow uses variables
 name: Appointment reminder
 entry: hello
 note: Optional free text. Unlike YAML comments, it is kept when the flow is saved.
@@ -54,6 +54,30 @@ prompt: { audio: vprompt_abc123, transcript: "Thanks for calling." } # an alread
 
 Calls only play recordings. Run `wk flows render <id>` (or
 `wk flows publish <id> --render`) to voice text prompts.
+
+## Variables (`schema_version: 4`)
+
+A v4 flow can declare `variables` and use `{{name}}` in string prompts, in
+the `template` of an audio prompt, and in menu option labels. Names are
+`[a-z][a-z0-9_]{0,31}`. Each variable needs a `default` (may be `""`); it
+may also have `description` and `max_len` (default 200, at most 500,
+counted in characters). `{{#name}}...{{/name}}` keeps its text only when
+the value is not empty (no nesting, no else).
+
+```yaml
+schema_version: 4
+variables:
+  place: { description: Where to meet, default: "the front desk", max_len: 80 }
+prompt: "Please meet us at {{place}}."
+prompt: { audio: vprompt_abc123, template: "Please meet us at {{place}}." }
+```
+
+`render` voices prompts with the defaults, so a call that keeps them costs
+nothing. Pass values with `wk voice call --flow <id-or-name> --var place="Room 4"`
+(or `--vars-file`); they are voiced when the call is placed. Values are
+trimmed and never expanded. In v1 to v3 flows `{{` is ordinary text. For a
+ready-made question flow, see `ask-question.yaml` and the section
+"Ask someone a question by phone" in SKILL.md.
 
 ## Example: reminder with a confirm menu
 

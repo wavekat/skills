@@ -118,7 +118,55 @@ Voice and turn on Settings → Automation, or run `wk voice service start` on
 a machine without the app. The Mac App Store build can't be driven from a
 terminal; `wk voice install` fixes that.
 
-## 4. Call flows (`wk flows`)
+## 4. Ask someone a question by phone
+
+Use this when you need an answer from a person and a key press is enough:
+"Is the 3 pm appointment still on? Press 1 for yes, 2 for no." One published
+flow, **Ask a question**, serves every question. Its variables all have
+defaults, so it also plays with none given.
+
+**First use.** Look for the flow, and only create it if it is missing:
+
+```sh
+wk flows list --json        # is there a published flow named "Ask a question"?
+# Missing: tell the user, and ask before you create it. Then:
+wk flows create references/ask-question.yaml --json   # .id is flow_…
+wk flows render <flow-id>   # voices the defaults, so a call that keeps them is free
+wk flows publish <flow-id>
+```
+
+**Each question** is one call (ask the user before dialing, as always):
+
+```sh
+wk voice call +14155550123 --flow "Ask a question" \
+  --var intro="This is the booking assistant." \
+  --var question="Is the 3 pm appointment still on?" \
+  --var option1=Yes --var option2=No --wait --json
+```
+
+- `--var name=value` can repeat; `--vars-file values.json` reads them from a
+  file. `--check` prepares the call without dialing. `option3` and `option4`
+  are optional; leave them out for two choices.
+- Text from `--var` is voiced when the call is placed and uses the prompt
+  quota (repeats are cached). Keep it short.
+- The `flow_finished` line has `choices: [{node, digit, label, loops}]`. The
+  answer is the last choice with `loops: false`. Key 9 (repeat) has
+  `loops: true`, so it is never an answer. No such choice, or exit code
+  other than 0, or `completed: false`: there is no answer.
+
+**Phoning your own user when you are blocked.** Do this only if the user
+asked for it in this session and gave you a number. Confirm the number once
+before the first call. Then:
+
+- Ask one question per call, with 2 to 4 short options. Put the most
+  blocking question first. Name the project in `intro`.
+- The question goes to text-to-speech and is read on a phone line. Never put
+  secrets, tokens or private data in it.
+- Act on the option pressed and carry on.
+- No answer: do not guess, and do not call again for the same question.
+  Write the question in the terminal and wait for the user.
+
+## 5. Call flows (`wk flows`)
 
 A call flow is a YAML script for a call: greeting, menu, message, hours,
 booking, hang up. See [references/flows.md](references/flows.md) for the
@@ -145,7 +193,7 @@ wk flows voices --json                      # voices for --voice
 - Own recordings: `prompt: {audio: ./greeting.wav, transcript: "…"}`.
   Platform flows take WAV only, up to 10 MB and 2 minutes.
 
-## 5. Platform data
+## 6. Platform data
 
 For accounts with the matching modules:
 
