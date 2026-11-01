@@ -1,6 +1,6 @@
 ---
 name: wk
-description: Use the WaveKat CLI (`wk`) to place and manage real phone calls, play a spoken message or recording on a call, write and publish call flows (IVR menus, reminders, message taking), set up the WaveKat Voice calling engine, and read WaveKat platform projects, annotations and dataset exports. Use when the user mentions WaveKat, `wk`, making or automating a phone call, a call flow, or WaveKat Voice.
+description: Use the WaveKat CLI (`wk`) to place and manage real phone calls, play a spoken message or recording on a call, write and publish call flows (IVR menus, reminders, message taking), ask someone a question by phone and read the key they press (including calling the user when you are blocked), set up the WaveKat Voice calling engine, and read WaveKat platform projects, annotations and dataset exports. Use when the user mentions WaveKat, `wk`, making or automating a phone call, a call flow, or WaveKat Voice.
 ---
 
 # WaveKat CLI (`wk`)
@@ -121,50 +121,58 @@ terminal; `wk voice install` fixes that.
 ## 4. Ask someone a question by phone
 
 Use this when you need an answer from a person and a key press is enough:
-"Is the 3 pm appointment still on? Press 1 for yes, 2 for no." One published
-flow, **Ask a question**, serves every question. Its variables all have
-defaults, so it also plays with none given.
+"Is the 3 pm appointment still on? Press 1 for yes, 2 for no." The person
+called must have asked to hear from the user. One published flow, **Ask a
+question**, serves every question. Its variables all have defaults, so it
+also plays with none given.
 
-**First use.** Look for the flow, and only create it if it is missing:
+**First use.** Look for the flow; create it only if it is missing:
 
 ```sh
-wk flows list --json        # is there a published flow named "Ask a question"?
-# Missing: tell the user, and ask before you create it. Then:
+wk flows list --json        # a published "Ask a question"? An unpublished draft of that name: reuse it (render, publish)
+# Missing: tell the user and ask before creating it. Then, using the file
+# references/ask-question.yaml next to this SKILL.md:
 wk flows create references/ask-question.yaml --json   # .id is flow_…
 wk flows render <flow-id>   # voices the defaults, so a call that keeps them is free
 wk flows publish <flow-id>
 ```
 
-**Each question** is one call (ask the user before dialing, as always):
+**Each question** is one call (confirm with the user first, as in the Ground rules):
 
 ```sh
 wk voice call +14155550123 --flow "Ask a question" \
-  --var intro="This is the booking assistant." \
-  --var question="Is the 3 pm appointment still on?" \
+  --var intro="Claude, working on yans dot app, is blocked." \
+  --var question="Should I delete the old migration?" \
   --var option1=Yes --var option2=No --wait --json
 ```
 
-- `--var name=value` can repeat; `--vars-file values.json` reads them from a
-  file. `--check` prepares the call without dialing. `option3` and `option4`
-  are optional; leave them out for two choices.
-- Text from `--var` is voiced when the call is placed and uses the prompt
-  quota (repeats are cached). Keep it short.
+- `--var name=value` can repeat. For text with quotes or `$`, use
+  `--vars-file values.json`. `--check` prepares the call without dialing.
+  `option3` and `option4` are optional.
+- `intro`, `question` and the options are read aloud: write names the way
+  they are said ("yans dot app"). Keep it short. Text from `--var` is voiced
+  when the call is placed and uses the prompt quota (repeats are cached).
 - The `flow_finished` line has `choices: [{node, digit, label, loops}]`. The
   answer is the last choice with `loops: false`. Key 9 (repeat) has
-  `loops: true`, so it is never an answer. No such choice, or exit code
-  other than 0, or `completed: false`: there is no answer.
+  `loops: true`, so it is never an answer. No such choice, an exit code
+  other than 0, or `completed: false` means no answer.
 
-**Phoning your own user when you are blocked.** Do this only if the user
-asked for it in this session and gave you a number. Confirm the number once
-before the first call. Then:
+**Phoning your own user when you are blocked.** Only if the user asked for
+it in this session and gave you a number. Confirm the number once; that, with
+their "call me if you get stuck", covers the calls for this session, to that
+number, with questions for that user only. Every other call follows the
+Ground rules.
 
-- Ask one question per call, with 2 to 4 short options. Put the most
-  blocking question first. Name the project in `intro`.
+- Ask one question per call, with 2 to 4 short options, and name the project
+  in `intro`. Ask only the most blocking question; the rest wait for the user
+  or a later call. Never place several calls in a row (20 automated calls
+  per hour at most).
 - The question goes to text-to-speech and is read on a phone line. Never put
   secrets, tokens or private data in it.
 - Act on the option pressed and carry on.
-- No answer: do not guess, and do not call again for the same question.
-  Write the question in the terminal and wait for the user.
+- No answer: do not guess and do not call again for the same question. Write
+  the question in the terminal and wait, or carry on only with work that
+  doesn't depend on the answer.
 
 ## 5. Call flows (`wk flows`)
 

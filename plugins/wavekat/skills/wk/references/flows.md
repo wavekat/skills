@@ -64,11 +64,20 @@ may also have `description` and `max_len` (default 200, at most 500,
 counted in characters). `{{#name}}...{{/name}}` keeps its text only when
 the value is not empty (no nesting, no else).
 
+Placeholders are allowed only in text prompts, in the `template` of an audio
+prompt, and in menu option labels. `template` is allowed only on audio
+prompts, and only in v4.
+
 ```yaml
+# text prompt
 schema_version: 4
 variables:
   place: { description: Where to meet, default: "the front desk", max_len: 80 }
 prompt: "Please meet us at {{place}}."
+```
+
+```yaml
+# audio prompt voiced ahead with the defaults, template kept for overrides
 prompt: { audio: vprompt_abc123, template: "Please meet us at {{place}}." }
 ```
 
