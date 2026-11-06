@@ -51,7 +51,7 @@ Claude runs the `wk` CLI on your machine, and `wk` talks to these services:
 | WaveKat platform (`platform.wavekat.com`, hosted on Cloudflare) | Your WaveKat sign-in, call flows you create, and (with Sync to cloud on) call history, recordings and transcripts | `wk login`, `wk flows`, platform data commands, and calls from a signed-in engine |
 | Your own SIP / phone provider | The numbers you call and the call audio | `wk call`, `wk ask` |
 | ElevenLabs (through WaveKat) | The text of prompts being turned into speech | `wk call --say` when signed in, `wk flows render` / `publish --render` |
-| OpenAI or ElevenLabs, directly | The text of prompts, only if you set `OPENAI_API_KEY` or `ELEVENLABS_API_KEY` | `wk call --say` / `wk ask` signed out |
+| OpenAI or ElevenLabs, directly | The text of prompts, only if you set `OPENAI_API_KEY` or `ELEVENLABS_API_KEY` | `wk call --say` / `wk ask`, when that source voices the call |
 | Sentry | Anonymous crash and error reports, with personal fields removed | When a `wk` command fails; turn off with `wk config telemetry off` |
 
 What is kept and for how long is set out in the
