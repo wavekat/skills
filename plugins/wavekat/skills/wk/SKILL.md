@@ -15,7 +15,7 @@ so you can drive it end to end.
 
 - **Calls are real and may cost money.** Confirm the phone number and what
   will be said with the user before every call, including automated ones.
-  The one exception is the standing permission in section 4. Only call
+  The exceptions are in section 4. Only call
   people who asked to hear from the user (WaveKat's terms forbid unsolicited
   automated calls and recorded messages).
 - **Always pass `--json`** and read stdout. The human tables have ANSI codes
@@ -26,9 +26,8 @@ so you can drive it end to end.
   `wk agents`. It matches the installed version, so prefer it over memory.
 - Never put passwords or API keys in arguments, and never say them on a
   call. SIP passwords go through `WK_SIP_PASSWORD_COMMAND`,
-  `WK_SIP_PASSWORD_FILE` or `WK_SIP_PASSWORD` for a call, or
-  `--password-file`, `--password-command`, `--password-stdin` when saving a
-  line.
+  `WK_SIP_PASSWORD_FILE` or `WK_SIP_PASSWORD` for a call. To save a line,
+  see `wk voice accounts add --help`.
 
 ## 1. Make sure `wk` is installed and current
 
@@ -58,6 +57,10 @@ export WK_SIP_PASSWORD_COMMAND='op read op://Private/SIP/password'
 # Optional: WK_SIP_AUTH_USER (if it differs from the user), WK_SIP_SERVER (outbound proxy)
 ```
 
+`export` may not last across separate shell calls in your harness. Set the
+variables in the user's shell profile, or put them on the same command line
+as the call: `WK_SIP_URI=… WK_SIP_PASSWORD_COMMAND=… wk call …`.
+
 The password comes from the first of `WK_SIP_PASSWORD_COMMAND` (a command
 that prints it), `WK_SIP_PASSWORD_FILE` (a file holding it) or
 `WK_SIP_PASSWORD`. Prefer the command or the file. Only use line details the
@@ -83,7 +86,7 @@ seems missing, check `wk me --json`.
 ## 3. Phone calls (`wk call`)
 
 ```sh
-wk call +14155550123 --say "The build is green." --accept-terms --json
+wk call +14155550123 --say "The build is green." --json
 ```
 
 - `wk call <to>` waits for the outcome by default; `--no-wait` returns once
@@ -102,8 +105,8 @@ wk call +14155550123 --say "The build is green." --accept-terms --json
   writes audio), then the computer's own voice. The `--json` result says
   which source voiced the call (`speech`); the system voice is robotic, so
   mention that to the user if it matters.
-- Provider keys and the command come from the environment, never the
-  command line.
+- Provider keys come from the environment, never the command line (the
+  TTS command holds no secret).
 
 ```sh
 wk call +14155550123 --say "Your order is ready." --check --json   # check, no dial
