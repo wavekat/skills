@@ -156,11 +156,14 @@ wk ask +14155550123 "Should I delete the old migration?" \
   standing permission below).
 - It phones, reads the question and waits. No sign-in or published flow is
   needed. The `--json` result is
-  `{answered, digit, label, call_id, outcome, speech}`: the answer is `label`
-  when `answered` is true.
+  `{answered, answered_call, digit, label, call_id, outcome, speech}`: the
+  answer is `label` when `answered` is true. `answered_call` says whether the
+  call was picked up at all. With no key pressed, the question plays twice
+  and the call ends.
 - Exit codes: `0` a valid option was pressed, `1` couldn't place the call,
-  `2` busy or declined, `3` failed or dropped, `4` no answer, `5` answered
-  but pressed no valid option. Anything but `0` means no answer.
+  `2` busy or declined, `3` failed or dropped, `4` no answer, `5` picked up
+  but no valid option. Anything but `0` means no answer. Exit `5` is usually
+  voicemail: mobiles send declined or unanswered calls there.
 - The question and options are read aloud: write names the way they are
   said ("yans dot app") and keep it short.
 
