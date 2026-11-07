@@ -1,6 +1,6 @@
 ---
 name: wk
-description: Use the WaveKat CLI (`wk`) to place real phone calls through the user's own SIP line with no WaveKat account, play a spoken message or recording on a call, ask someone a question by phone and read the key they press (including calling the user when you are blocked or need an important confirmation), write and publish call flows (IVR menus, reminders, message taking), set up the WaveKat Voice calling engine, and read WaveKat platform projects, annotations and dataset exports. Use when the user mentions WaveKat, `wk`, making or automating a phone call, calling them when you are stuck, a call flow, or WaveKat Voice.
+description: Use the WaveKat CLI (`wk`) to place real phone calls through the user's own SIP line with no WaveKat account, play a spoken message or recording on a call, ask someone a question by phone with a ready-made flow and read the key they press (including calling the user when you are blocked or need an important confirmation), write and publish call flows (IVR menus, reminders, message taking), set up the WaveKat Voice calling engine, and read WaveKat platform projects, annotations and dataset exports. Use when the user mentions WaveKat, `wk`, making or automating a phone call, calling them when you are stuck, a call flow, or WaveKat Voice.
 ---
 
 # WaveKat CLI (`wk`)
@@ -41,10 +41,10 @@ https://wavekat.com/docs/cli/getting-started/ (macOS and Linux, one command). Wh
 it's done, run `wk --version` again and carry on. If `wk` was installed to
 `~/.local/bin` and isn't found, ask them to add that folder to `PATH`.
 
-`wk call` and `wk ask` (sections 3 and 4) need the latest `wk` and calling
-engine. If `wk call` or `wk ask` isn't a known command, ask the user to run
-`wk update`; if `wk ask` says the engine is too old, ask them to run
-`wk voice update`, or use the `--flow-file` recipe in section 4 meanwhile.
+`wk call` and ready-made flows (sections 3 and 4) need the latest `wk` and
+calling engine. If `wk call` isn't a known command, ask the user to run
+`wk update`; if `--flow ask` isn't found, ask them to run `wk voice update`,
+or use the `--flow-file` recipe in section 4 meanwhile.
 
 ## 2. Set up a line (no WaveKat account needed)
 
@@ -137,33 +137,38 @@ is fixed by `wk voice update`. The Mac App Store build can't be driven from
 a terminal; `wk voice install` fixes that. `wk voice status --json` and
 `wk voice setup --json` show the engine and saved lines.
 
-## 4. Ask someone a question by phone
+## 4. Ready-made flows: ask a question, leave a message
 
-Use this when you need an answer from a person and a key press is enough:
-"Is the 3 pm appointment still on? Press 1 for yes, 2 for no." The person
-called must have asked to hear from the user.
+Ready-made call flows install from marketplaces, the way Claude Code
+installs plugins, and run through the normal `wk call --flow`. The official
+marketplace has `ask` (one question, answered with a key) and `notify` (say a
+message twice, then hang up). Official flows install on first use; no sign-in
+is needed. The person called must have asked to hear from the user.
 
 ```sh
-wk ask +14155550123 "Should I delete the old migration?" \
-  --option Yes --option No \
-  --intro "Claude, working on yans dot app, is blocked." --json
+wk call +14155550123 --flow ask \
+  --var intro="Claude, working on yans dot app, is blocked." \
+  --var question="Should I delete the old migration?" \
+  --var option1=Yes --var option2=No --json
 ```
 
-- 2 to 4 `--option` labels map to keys 1 to 4; key 9 repeats the question.
-  `--intro` says who is asking. Omit `<to>` to call the user's own number
-  (`me.phone`, below). `--tts`, `--account` and `--accept-terms` work as for
-  `wk call`. Confirm with the user first, as in the Ground rules (or use the
-  standing permission below).
-- It phones, reads the question and waits. No sign-in or published flow is
-  needed. The `--json` result is
-  `{answered, answered_call, digit, label, call_id, outcome, speech}`: the
-  answer is `label` when `answered` is true. `answered_call` says whether the
-  call was picked up at all. With no key pressed, the question plays twice
-  and the call ends.
-- Exit codes: `0` a valid option was pressed, `1` couldn't place the call,
-  `2` busy or declined, `3` failed or dropped, `4` no answer, `5` picked up
-  but no valid option. Anything but `0` means no answer. Exit `5` is usually
-  voicemail: mobiles send declined or unanswered calls there.
+- `ask` variables: `intro`, `question`, `option1` to `option4` (2 to 4
+  options, keys 1 to 4; key 9 repeats). With no key pressed it plays twice,
+  then hangs up. `notify` variables: `intro`, `message`.
+- Omit the number to call the user's own number (`me.phone`, below). Confirm
+  with the user first, as in the Ground rules (or use the standing permission
+  below). For text with quotes or `$`, use `--vars-file values.json`.
+- Read the answer from the `flow_finished` line: `choices: [{node, digit,
+  label, loops}]`. The answer is the last choice with `loops: false` and a
+  digit from 1 to 4. A `flow_finished` line means the call was picked up;
+  with no such choice, it was most often voicemail (mobiles send declined or
+  unanswered calls there). No choice, an exit code other than 0, or
+  `completed: false` means no answer.
+- `wk voice flows show ask` prints a flow's YAML and variables.
+  `wk voice flows install <name>@<marketplace>` installs from another
+  marketplace (add it first with `wk voice flows marketplace add owner/repo`);
+  those never install by themselves. Install community flows only when the
+  user asks, and read what `install` says the flow can dial.
 - The question and options are read aloud: write names the way they are
   said ("yans dot app") and keep it short.
 
@@ -184,55 +189,30 @@ the user asked for it only in this session, confirm the number once; that
 covers this session, to that number only. Every other call follows the
 Ground rules.
 
-- Ask one question per call, with 2 to 4 short options, and name the project
-  in `intro`. Ask only the most blocking question; the rest wait for the user
-  or a later call. Never place several calls in a row (20 automated calls
-  per hour at most). Use a call for things that matter, not small
-  decisions.
+- Ask one question per call (`--flow ask`), with 2 to 4 short options, and
+  name the project in `intro`. Ask only the most blocking question; the rest
+  wait for the user or a later call. Never place several calls in a row (20
+  automated calls per hour at most). Use a call for things that matter, not
+  small decisions.
 - The question is read aloud on a phone line, by a voice service when the
   voice source is not local. Never put secrets, tokens or private data in it.
 - Act on the option pressed and carry on. Tell the user in the terminal what
   was asked and what they chose by phone, so they can see it when they return.
-- No answer (exit `4` or `5`, or `answered: false`): do not guess and do not
-  call again for the same question. Write the question in the terminal and
-  wait, or carry on only with work that doesn't depend on the answer.
+- No answer: do not guess and do not call again for the same question. Write
+  the question in the terminal and wait, or carry on only with work that
+  doesn't depend on the answer.
 
-**Older engine.** If `wk ask` says the engine is too old and the user can't
-update right now, use the flow in `references/ask-question.yaml` in this
-skill's directory (resolve it from the base directory this skill was loaded
-from, not the working directory), with `--check --json` first to confirm the
-engine supports `--var`:
+**Older engine.** If `--flow ask` isn't found and the user can't update right
+now (`wk voice update`), use the same flow from this skill's directory
+(resolve it from the base directory this skill was loaded from, not the
+working directory), with `--check --json` first to confirm the engine
+supports `--var`:
 
 ```sh
 wk call +14155550123 --flow-file <this skill's directory>/references/ask-question.yaml \
-  --var intro="Claude, working on yans dot app, is blocked." \
   --var question="Should I delete the old migration?" \
   --var option1=Yes --var option2=No --json
 ```
-
-`--var name=value` can repeat (`option3` and `option4` are optional); for
-text with quotes or `$`, use `--vars-file values.json`. The `flow_finished`
-line has `choices: [{node, digit, label, loops}]`. The answer is the last
-choice with `loops: false`; key 9 has `loops: true`, so it is never an
-answer. No such choice, an exit code other than 0, or `completed: false`
-means no answer.
-
-**Signed-in option: publish the flow.** Users who want the platform voices
-cached can publish it once, with the same file. Look first; create it only
-if it is missing, and ask the user before creating it (it needs the Pro plan
-because it has a menu, and uses one of their published-flow slots):
-
-```sh
-wk flows list --json        # a published "Ask a question"? An unpublished draft of that name: reuse it (publish --render)
-wk flows create <this skill's directory>/references/ask-question.yaml --json   # .id is flow_…
-wk flows publish <flow-id> --render --json   # voices the defaults, so a call that keeps them is free
-wk call +14155550123 --flow "Ask a question" \
-  --var question="Should I delete the old migration?" \
-  --var option1=Yes --var option2=No --json
-```
-
-If the account can't publish (`plan_blocked`, or `canPublish: false` in
-`wk flows list --json`), use `wk ask` instead.
 
 ## 5. Call flows (`wk flows`, needs sign-in)
 
