@@ -102,9 +102,11 @@ wk call +14155550123 --say "The build is green." --json
   order: `--tts <name>` (an error if it can't be used, never a silent
   fallback), WaveKat when signed in, `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`,
   `--tts-command` / `WK_TTS_COMMAND` (a command that reads the text and
-  writes audio), then the computer's own voice. The `--json` result says
-  which source voiced the call (`speech`); the system voice is robotic, so
-  mention that to the user if it matters.
+  writes audio), `reo` (a free, natural voice that runs on the computer;
+  needs engine 0.0.64 or newer), then the computer's own voice. The
+  `--json` result says which source voiced the call (`speech`). The
+  system voice is robotic: if the result says `system`, suggest installing
+  reo (`curl -fsSL https://reo.wavekat.com/install.sh | sh`).
 - Provider keys come from the environment, never the command line (the
   TTS command holds no secret).
 
