@@ -1,8 +1,9 @@
 # WaveKat skills for AI agents
 
 Plugins that let Claude (and other agents) use [WaveKat](https://wavekat.com)
-through the `wk` command-line tool: place real phone calls, play a message
-or recording on a call, and write and publish call flows.
+through the `wk` command-line tool: place real phone calls through your own
+SIP line (no WaveKat account needed), ask someone a question and read the key
+they press, and write and publish call flows.
 
 ## Install in Claude Code
 
@@ -26,7 +27,7 @@ confirm"*, or *"call me on +1 415 555 0123 if you get stuck"*. If `wk` isn't ins
 
 | Plugin | What it does |
 |--------|--------------|
-| [`wavekat`](plugins/wavekat) | The `wk` skill: install and sign in, phone calls with `wk voice`, call flows with `wk flows`, and WaveKat platform data |
+| [`wavekat`](plugins/wavekat) | The `wk` skill: install, phone calls with `wk call` and ready-made flows such as `ask` (sign-in optional), call flows with `wk flows`, and WaveKat platform data |
 
 ## Without Claude Code
 
@@ -48,8 +49,10 @@ Claude runs the `wk` CLI on your machine, and `wk` talks to these services:
 | Service | What it receives | When |
 |---------|------------------|------|
 | WaveKat platform (`platform.wavekat.com`, hosted on Cloudflare) | Your WaveKat sign-in, call flows you create, and (with Sync to cloud on) call history, recordings and transcripts | `wk login`, `wk flows`, platform data commands, and calls from a signed-in engine |
-| Your own SIP / phone provider | The numbers you call and the call audio | `wk voice call` |
-| ElevenLabs (through WaveKat) | The text of prompts being turned into speech | `wk voice call --say`, `wk flows render` / `publish --render` |
+| Your own SIP / phone provider | The numbers you call and the call audio | `wk call` |
+| ElevenLabs (through WaveKat) | The text of prompts being turned into speech | `wk call --say` when signed in, `wk flows render` / `publish --render` |
+| OpenAI or ElevenLabs, directly | The text of prompts, only if you set `OPENAI_API_KEY` or `ELEVENLABS_API_KEY` | `wk call --say` / `--flow`, when that source voices the call |
+| GitHub (`raw.githubusercontent.com`) | A request for the flow being installed, nothing about you or your calls | `wk voice flows install`, and the first `wk call --flow ask` / `notify` |
 | Sentry | Anonymous crash and error reports, with personal fields removed | When a `wk` command fails; turn off with `wk config telemetry off` |
 
 What is kept and for how long is set out in the
